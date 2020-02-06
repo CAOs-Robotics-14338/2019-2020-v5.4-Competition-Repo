@@ -152,11 +152,11 @@ public class Carte_Blanche_Blue extends LinearOpMode {
             else if(valRight == 0 && !posfound){pos = 3; posfound = true;}
             else if (valLeft == 0 && !posfound){pos = 3; posfound = true;}
             else{pos = 1; posfound = true;}
-            armCollection.expand(true);
+            armCollection.expandControl(1);
 
             if(pos == 1 && !skyFound){
                 skyFound = true;
-                armCollection.expand(true);
+                armCollection.expandControl(1);
                 sleep(200);
                 // Driving from the wall to the first skystone @ position 1
                 runtime.reset();
@@ -175,7 +175,7 @@ public class Carte_Blanche_Blue extends LinearOpMode {
                 }
                 holonomicDrive.stopMoving();
                 armCollection.grab(true);
-                armCollection.expand(false);
+                armCollection.expandControl(1);
                 sleep(200);
 
                 // Reversing from collecting so we can drive under the alliance bridge
