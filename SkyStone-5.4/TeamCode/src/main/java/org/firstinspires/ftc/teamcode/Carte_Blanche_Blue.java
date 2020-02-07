@@ -28,7 +28,7 @@ import java.util.List;
 public class Carte_Blanche_Blue extends LinearOpMode {
     private ElapsedTime runtime = new ElapsedTime();
     private DcMotor FrontRightMotor, FrontLeftMotor, BackRightMotor, BackLeftMotor, IntakeLeftMotor, IntakeRightMotor, ScissorLiftMotorLeft, ScissorLiftMotorRight;
-    private Servo IntakePulley, left_hook, right_hook, claw, wrist;
+    private Servo IntakePulley, left_hook, right_hook, claw, capstone;
     private CRServo expansion;
 
     HolonomicDrive holonomicDrive;
@@ -52,7 +52,7 @@ public class Carte_Blanche_Blue extends LinearOpMode {
     double wallToSS1 = 1.55;
     double wallToSS2 = 1.40;
     double wallToSS3 = 1.55;
-    double SS1ToFoundation = 1.45;
+    double SS1ToFoundation = 2.0;
     double SS2ToFoundation = 1.55;
     double SS3ToFoundation = 1.65;
     double pos1FND2SS2 = 2.5;
@@ -106,7 +106,7 @@ public class Carte_Blanche_Blue extends LinearOpMode {
         right_hook = hardwareMap.servo.get("right_hook");
 
         claw = hardwareMap.servo.get("claw");
-        wrist = hardwareMap.servo.get("wrist");
+        capstone = hardwareMap.servo.get("capstone");
         expansion = hardwareMap.get(CRServo.class,"expansion");
         BNO055IMU.Parameters parameters = new BNO055IMU.Parameters();
 
@@ -122,15 +122,17 @@ public class Carte_Blanche_Blue extends LinearOpMode {
 
         holonomicDrive = new HolonomicDrive(FrontRightMotor, FrontLeftMotor, BackRightMotor, BackLeftMotor);
         //scissorLift = new ScissorLift(ScissorLiftMotor);
-        //intake_systems = new Intake_Systems(IntakeRightMotor, IntakeLeftMotor, IntakePulley);
+        intake_systems = new Intake_Systems(IntakeRightMotor, IntakeLeftMotor, IntakePulley);
         Gyro = new gyro(FrontRightMotor, FrontLeftMotor, BackRightMotor, BackLeftMotor, imu);
         botServos = new BotServos(left_hook, right_hook);
-        armCollection = new ArmCollection(claw, wrist, expansion, IntakePulley);
+        armCollection = new ArmCollection(claw, expansion, IntakePulley);
 
 
         // Setting servos to the retracted position
         left_hook .setPosition(lStored);
         right_hook.setPosition(rStored);
+        IntakePulley.setPosition(0);
+        armCollection.clawAuto(false);
 
 
 
@@ -148,15 +150,14 @@ public class Carte_Blanche_Blue extends LinearOpMode {
             telemetry.addData("Values", valLeft+"   "+valMid+"   "+valRight);
             telemetry.update();
             sleep(100);
-            if(valMid == 0 && !posfound){pos = 2; posfound = true;}
-            else if(valRight == 0 && !posfound){pos = 3; posfound = true;}
-            else if (valLeft == 0 && !posfound){pos = 3; posfound = true;}
-            else{pos = 1; posfound = true;}
+            if(valMid == 0 && !posfound){pos = 1; posfound = true;}
+            else if(valRight == 0 && !posfound){pos = 2; posfound = true;}
+            else{pos = 3; posfound = true;}
             armCollection.expandControl(1);
 
             if(pos == 1 && !skyFound){
                 skyFound = true;
-                armCollection.expandControl(1);
+
                 sleep(200);
                 // Driving from the wall to the first skystone @ position 1
                 runtime.reset();
@@ -169,13 +170,14 @@ public class Carte_Blanche_Blue extends LinearOpMode {
                 // Driving towards the Skystone with the claw ready
                 runtime.reset();
                 holonomicDrive.autoDrive(0,0.8);
-                while (opModeIsActive() && runtime.seconds() < intake_time){
+                while (opModeIsActive() && runtime.seconds() < intake_time-1){
                     telemetry.addLine("Collecting the Skystone");
                     telemetry.update();
                 }
                 holonomicDrive.stopMoving();
-                armCollection.grab(true);
-                armCollection.expandControl(1);
+                sleep(1000);
+                armCollection.clawAuto(true);
+                armCollection.expandControl(0);
                 sleep(200);
 
                 // Reversing from collecting so we can drive under the alliance bridge
@@ -197,7 +199,7 @@ public class Carte_Blanche_Blue extends LinearOpMode {
                 while (opModeIsActive() && runtime.seconds() < SS1ToFoundation){
                     telemetry.addLine("Driving to the building site");
                     telemetry.update();
-                    if(runtime.seconds() > SS1ToFoundation/2 && runtime.seconds() < SS1ToFoundation){
+                    if(runtime.seconds() > SS1ToFoundation/2){
                         ScissorLiftMotorLeft.setPower(0.6);
                         ScissorLiftMotorRight.setPower(0.6);
                     }
@@ -220,25 +222,28 @@ public class Carte_Blanche_Blue extends LinearOpMode {
                 botServos.auto(true);
                 sleep(400);
 
-                /**
-                 *
-                 * Lower scissor lift, and release claw
-                 *
-                 */
+
 
                 // Reverse with foundation, rotate, and push into wall
                 runtime.reset();
                 holonomicDrive.autoDrive(180,0.90);
                 while (opModeIsActive() && runtime.seconds() < 1){}
                 holonomicDrive.stopMoving();
+
+
                 Gyro.rotate(90,0.5);
                 sleep(150);
+                armCollection.clawAuto(true);
                 runtime.reset();
                 holonomicDrive.autoDrive(0,0.90);
                 while (opModeIsActive() && runtime.seconds() < 1){}
                 holonomicDrive.stopMoving();
+
                 botServos.auto(false);
+                ScissorLiftMotorLeft.setPower(-0.4);
+                ScissorLiftMotorRight.setPower(-0.4);
                 sleep(400);
+
                 runtime.reset();
                 holonomicDrive.autoDrive(90,0.90);
                 while (opModeIsActive() && runtime.seconds() < 0.5){}
@@ -248,6 +253,11 @@ public class Carte_Blanche_Blue extends LinearOpMode {
                 runtime.reset();
                 holonomicDrive.autoDrive(180, 0.90);
                 while (opModeIsActive() && runtime.seconds() < pos1FND2SS2){
+                    if(runtime.seconds() > pos1FND2SS2/3){
+                        ScissorLiftMotorLeft.setPower(0);
+                        ScissorLiftMotorRight.setPower(0);
+
+                    }
                     telemetry.addLine("Returning to second skystone");
                     telemetry.update();
                 }

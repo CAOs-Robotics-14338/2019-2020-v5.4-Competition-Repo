@@ -13,7 +13,7 @@ import org.firstinspires.ftc.robotcore.external.Telemetry;
 public class ArmCollection {
     // //Set Up Variables and Servo Devices
 
-    private Servo claw, wrist;
+    private Servo claw;
     private CRServo expansion;
 
     //Set Up Intake pulley for the automated tasks
@@ -36,12 +36,9 @@ public class ArmCollection {
 
 //Constructor
     // This allows for use of all hardware components including the pulley which is used for automation.
-    public ArmCollection(Servo claW, Servo wrisT, CRServo expansioN, Servo pulley){
+    public ArmCollection(Servo claW, CRServo expansioN, Servo pulley){
         claw = claW;
-        wrist = wrisT;
         expansion = expansioN;
-        wrist.setPosition(MID_POS); //Make sure that the wrist initializes in the Middle Position
-        // so it is out of the way of any electronics.
         IntakePulley = pulley;
 
 
@@ -116,79 +113,20 @@ public class ArmCollection {
         }
     }
 
-//Wrist
-    // Wrist Control for Teleop with various ways to set the position of the wrist
-    public void wristControl(double xstick, boolean right_bumper, boolean left_bumper, boolean start) {
-        //Using the x value of a joystick the wrist will increase by the INCREMENT value.
-        // If the right bumper is pressed, set the position to the minimum position or far right
-        //If the left bumper is pressed, set the position to the maximum position or far left
-        //If the start button is pressed, set the position to the middle position.
-        double wristRange = Range.clip( (-xstick), -1.0, 1.0);
-        if (wristRange > 0){
-            position += INCREMENT ;
-            if (position >= MAX_POS ) {
-                position = MAX_POS;
+    public void clawAuto(boolean state) {
+
+            if(state){
+                IntakePulley.setPosition(inactive); //using the intake pulley moves the intake arms to
+                //the stowed position so they are out of the way
+                claw.setPosition(0.0);          // preferred set 0.0
             }
-        }
-        else {
-            if (wristRange < 0){
-                //position = -1.0;
-                position -= INCREMENT ;
-                if (position <= MIN_POS ) {
-                    position = MIN_POS;
-                }
+            else{
+                IntakePulley.setPosition(active); //using the intake pulley moves the intake arms to
+                //the stowed position so they are out of the way
+                claw.setPosition(0.5);          // preferred set 0.0
+
             }
-        }
-        if (right_bumper){
-            position = MIN_POS;
-
-        }
-        if (left_bumper){
-            position = MAX_POS;
-        }
-        if (start){
-            position = MID_POS;
-        }
-        wrist.setPosition(position);
-    }
-
-    //Potential Different Way of Controlling the wrist with a joystick x-value
-    //If the wristRange is greater than 0, then the wrist will add increment value until it reaches
-    //the MAX_POS
-    //If the the wristRange is less than 0, the the wrist will subtract the increment value until
-    //it reaches the MIN_POS
-    public void wristControl(double xstick) {
-        double wristRange = Range.clip( (-xstick), -1.0, 1.0);
-        if (wristRange > 0){
-            position += INCREMENT ;
-            if (position >= MAX_POS ) {
-                position = MAX_POS;
-            }
-        }
-        else {
-            if (wristRange < 0){
-                //position = -1.0;
-                position -= INCREMENT ;
-                if (position <= MIN_POS ) {
-                    position = MIN_POS;
-                }
-            }
-        }
-
-        wrist.setPosition(position);
-    }
-
-    //reset the wrist and set the intake arms ready to intakes
-    public void reset(boolean button){
-        // set wrist to straight ahead (middle position) and up and collector engaged and ready to collect
-        wrist.setPosition(MID_POS);
-        IntakePulley.setPosition(active);
-       // // driver needs to retract expansion and lower the scissor lift possible code for later competition
-
 
     }
-
-
-
 
 }

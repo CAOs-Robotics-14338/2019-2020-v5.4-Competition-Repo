@@ -25,50 +25,59 @@ import java.util.List;
 
 @Autonomous(name= "Blue DS Seperated", group="Blue")
 public class Blue_DS_Seperated extends LinearOpMode {
-    private ElapsedTime runtime = new ElapsedTime();
+
+
+    // Setting up our DcMotors and Servos
     private DcMotor FrontRightMotor, FrontLeftMotor, BackRightMotor, BackLeftMotor, IntakeLeftMotor, IntakeRightMotor;
     private Servo left_hook, right_hook, IntakePulley;
+
+
+    // Creating instances of our other classes
     HolonomicDrive holonomicDrive;
     Intake_Systems intake_systems;
     BotServos botServos;
     gyro Gyro;
     BNO055IMU imu;
+
+    // Establishing our timer and gyro
     Orientation lastAngles = new Orientation();
-    double                  globalAngle, power = .30, correction;
+    private ElapsedTime runtime = new ElapsedTime();
 
 
+    // Declaring our variables
+    double globalAngle, power = .30, correction;
     double lStored = 0;
     double rStored = 1;
     double lActive = 0.6;
     double rActive = 0.4;
     double servoTime = 0.6;
     double time = 2;
+
+    // Part 1
     double intake_time = 0.50;
     double wallToSS1 = 1.45;
     double wallToSS2 = 1.35;
     double wallToSS3 = 1.45;
+
+    // Part 2
     double SS1ToFoundation = 1.45;
     double SS2ToFoundation = 1.80;
     double SS3ToFoundation = 2.05;
+
+    // Part 3
     double pos1FND2SS2 = 2.35; //2.5
     double pos2FND2SS2 = 2.25; //2.5
     double pos3FND2SS2 = 2.7;
+
+    // Part 4
     double P1SS2ToFoundation = 2.45;
     double P2SS2ToFoundation = 2.75;
     double P3SS2ToFoundation = 2.8;
-    double Foundation2Skybride = 0.5;
 
-    private double r_time = 3.5;
-    private double numTime = 0.5;
-    private double postime = 0;
-    private double pos2time = 0;
-    private double movetime = 0;
-    private double newtime = 0;
-    private double timetime = 0;
-    private double newtime2 = 0;
+    // General variables
+    double Foundation2Skybride = 0.5;
     int pos;
     boolean skyFound = false;
-    boolean sky2Found = false;
     boolean done = false;
 
     //0 means skystone, 1 means yellow stone

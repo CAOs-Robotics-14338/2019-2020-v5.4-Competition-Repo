@@ -29,6 +29,8 @@
 
 package org.firstinspires.ftc.teamcode;
 
+import android.graphics.Paint;
+
 import com.qualcomm.robotcore.eventloop.opmode.OpMode;
 import com.qualcomm.robotcore.eventloop.opmode.TeleOp;
 import com.qualcomm.robotcore.hardware.CRServo;
@@ -59,7 +61,7 @@ public class TestingOpModeDPADPlusTouch extends OpMode
     // Declare All Variables of Motors and Servos Used
     private ElapsedTime runtime = new ElapsedTime();
     private DcMotor  FrontRightMotor, FrontLeftMotor, BackRightMotor, BackLeftMotor, IntakeLeftMotor, IntakeRightMotor, ScissorLiftMotorLeft, ScissorLiftMotorRight;
-    private Servo IntakePulley, left_hook, right_hook , claw , wrist;
+    private Servo IntakePulley, left_hook, right_hook , claw, capstone;
     private CRServo expansion;
 
     //Declare the Subsystems used in this OpMode
@@ -68,6 +70,7 @@ public class TestingOpModeDPADPlusTouch extends OpMode
     Intake_Systems intake_systems;
     BotServos bot_servo;
     ArmCollection armCollection;
+    Capstone capStone;
 // Declare the Touch Sensor
     DigitalChannel touch;
 
@@ -96,7 +99,7 @@ public class TestingOpModeDPADPlusTouch extends OpMode
         left_hook = hardwareMap.servo.get("left_hook");
         right_hook = hardwareMap.servo.get("right_hook");
         claw = hardwareMap.servo.get("claw");
-        wrist = hardwareMap.servo.get("wrist");
+        capstone = hardwareMap.servo.get("capstone");
         expansion = hardwareMap.get(CRServo.class,"expansion");
 
         touch = hardwareMap.get(DigitalChannel.class, "touch");
@@ -107,7 +110,8 @@ public class TestingOpModeDPADPlusTouch extends OpMode
         scissorLift = new ScissorLift(ScissorLiftMotorLeft, ScissorLiftMotorRight, IntakePulley);
         intake_systems = new Intake_Systems(IntakeRightMotor, IntakeLeftMotor, IntakePulley, touch, claw);
         bot_servo = new BotServos(left_hook, right_hook);
-        armCollection = new ArmCollection(claw, wrist, expansion, IntakePulley);
+        armCollection = new ArmCollection(claw, expansion, IntakePulley);
+        capStone = new Capstone(capstone);
         // Tell the driver that initialization is complete.
         telemetry.addData("Status", "Initialized");
     }
@@ -160,10 +164,8 @@ public class TestingOpModeDPADPlusTouch extends OpMode
         //Claw
         boolean grab_control = gamepad2.x;
         boolean stone_release_control = gamepad2.y;
-        double wrist_control = gamepad2.right_stick_x;
-        boolean fineWristRight = gamepad2.right_bumper;
-        boolean fineWristLeft = gamepad2.left_bumper;
-        boolean fineWristMiddle = gamepad2.start;
+        boolean ExtendCap = gamepad2.right_bumper;
+        boolean RetractCap = gamepad2.left_bumper;
 
         //Running the subsystems with the controls
 
@@ -178,12 +180,13 @@ public class TestingOpModeDPADPlusTouch extends OpMode
         bot_servo.activate(foundation_control1);
         //Scissor Lift
         scissorLift.LiftControl(-lift);
-       //Expansion Arm
+        //Expansion Arm
         armCollection.expandControlDPAD(dpad_up, dpad_down);
         //Claw
         armCollection.grab(grab_control);
         armCollection.release(stone_release_control);
-        armCollection.wristControl(wrist_control, fineWristRight, fineWristLeft, fineWristMiddle);
+        //Capstone
+        capStone.CapControl(ExtendCap, RetractCap);
 
         //Testing if the Touch Sensor was pressed which will signal a comment saying that the stone has been collected.
         //This touch sensor is used to see if the stone has been collected when we the robot is on the opposite side of
