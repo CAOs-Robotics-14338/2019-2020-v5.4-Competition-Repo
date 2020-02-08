@@ -58,7 +58,7 @@ public class TestingOpMode extends OpMode
     // Declare OpMode members.
     private ElapsedTime runtime = new ElapsedTime();
     private DcMotor  FrontRightMotor, FrontLeftMotor, BackRightMotor, BackLeftMotor, IntakeLeftMotor, IntakeRightMotor, ScissorLiftMotorLeft, ScissorLiftMotorRight;
-    private Servo IntakePulley, left_hook, right_hook , claw , wrist;
+    private Servo IntakePulley, left_hook, right_hook , claw;
     private CRServo expansion;
 
     HolonomicDrive holonomicDrive;
@@ -91,7 +91,6 @@ public class TestingOpMode extends OpMode
         right_hook = hardwareMap.servo.get("right_hook");
 
         claw = hardwareMap.servo.get("claw");
-        wrist = hardwareMap.servo.get("wrist");
         expansion = hardwareMap.get(CRServo.class,"expansion");
 
 
@@ -100,7 +99,7 @@ public class TestingOpMode extends OpMode
         intake_systems = new Intake_Systems(IntakeRightMotor, IntakeLeftMotor, IntakePulley);
         bot_servo = new BotServos(left_hook, right_hook);
 
-        armCollection = new ArmCollection(claw, wrist, expansion, IntakePulley);
+        armCollection = new ArmCollection(claw, expansion, IntakePulley);
 
         // Tell the driver that initialization is complete.
         telemetry.addData("Status", "Initialized");
@@ -170,7 +169,6 @@ public class TestingOpMode extends OpMode
         armCollection.expandControl(expand_control);
         armCollection.grab(grab_control);
         armCollection.release(stone_release_control);
-        armCollection.wristControl(wrist_control, fineWristRight, fineWristLeft, fineWristMiddle);
 
         telemetry.addData("Status", "Run Time: " + runtime.toString());
     }
